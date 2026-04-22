@@ -1,5 +1,5 @@
 CREATE TABLE tb_endereco (
-    id BIGINT PRIMARY KEY,
+    id BIGSERIAL PRIMARY KEY,
     rua VARCHAR(120) NOT NULL,
     numero VARCHAR(20) NOT NULL,
     complemento VARCHAR(100),

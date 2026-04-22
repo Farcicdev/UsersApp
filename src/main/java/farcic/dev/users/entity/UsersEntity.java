@@ -23,7 +23,7 @@ public class UsersEntity {
     private String password;
 
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)
     @JoinColumn(name = "enderece_id", nullable = false)
     private EnderecoEntity endereco;
 
