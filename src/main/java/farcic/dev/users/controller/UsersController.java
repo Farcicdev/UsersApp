@@ -5,6 +5,7 @@ import farcic.dev.users.dto.request.UsersRequestDto;
 import farcic.dev.users.dto.request.UsersUpdateRequestDto;
 import farcic.dev.users.dto.response.UsersResponseDto;
 import farcic.dev.users.service.UsersService;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -36,11 +37,16 @@ public class UsersController {
         return service.createUser(resquestDto);
     }
 
-    @Operation(summary = "Listar usuarios", description = "Retorna todos os usuarios cadastrados")
+    @Operation(summary = "Listar usuarios", description = "Retorna usuarios cadastrados com suporte a paginacao e ordenacao")
     @ApiResponse(responseCode = "200", description = "Usuarios retornados com sucesso")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public Page<UsersResponseDto> listarTodos(Pageable pageable) {
+    public Page<UsersResponseDto> listarTodos(
+            @Parameter(
+                    description = "Paginacao da consulta. Exemplos: page=0&size=10 ou sort=name,asc"
+            )
+            Pageable pageable
+    ) {
         return service.listar(pageable);
     }
 

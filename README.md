@@ -16,6 +16,7 @@ API REST para cadastro e gerenciamento de usuarios com:
 - cadastro de usuario
 - login com JWT
 - listagem de usuarios
+- listagem paginada de usuarios
 - busca por id
 - atualizacao de cadastro
 - alteracao de senha
@@ -178,6 +179,20 @@ Authorization: Bearer SEU_TOKEN
 - `DELETE /users/{id}`
 - `DELETE /users/all`
 
+### Paginacao
+
+A listagem de usuarios suporta paginacao:
+
+```http
+GET /users?page=0&size=10&sort=name,asc
+```
+
+Exemplo:
+
+```http
+GET /users?page=0&size=5
+```
+
 ## Roles
 
 - `USER`
@@ -190,6 +205,28 @@ Regras atuais:
 - `USER` pode deletar a propria conta
 - `ADMIN` pode deletar todos os usuarios
 - `ADMIN` pode acessar listagem protegida
+
+## Resposta de erro
+
+As exceptions principais retornam JSON padronizado:
+
+```json
+{
+  "message": "CEP nao encontrado",
+  "status": 404,
+  "timestamp": "2026-04-23T12:00:00"
+}
+```
+
+Exemplos tratados:
+
+- email duplicado
+- usuario nao encontrado
+- CEP nao encontrado
+- erro de validacao
+- senha atual invalida
+- confirmacao de senha incorreta
+- acesso negado
 
 ## Validacoes
 
@@ -232,8 +269,6 @@ mvn clean package -DskipTests
 
 ## Proximos passos
 
-- padronizar respostas de erro em JSON
-- adicionar paginacao
 - criar endpoint `/users/me`
 - testes unitarios e de integracao
 - fluxo de confirmacao de email

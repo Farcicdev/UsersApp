@@ -25,6 +25,6 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Users API")
                         .version("v1")
-                        .description("API para cadastro e gerenciamento de usuarios com endereco via CEP"));
+                        .description("API para cadastro e gerenciamento de usuarios com endereco via CEP e autenticacao JWT Bearer"));
     }
 }
