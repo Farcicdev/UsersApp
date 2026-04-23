@@ -6,6 +6,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -29,6 +30,8 @@ public class UsersEntity implements UserDetails {
     private String password;
     @Enumerated(EnumType.STRING)
     private UsersRole role;
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
 
 
     @OneToOne(cascade = CascadeType.PERSIST)

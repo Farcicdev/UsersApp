@@ -19,6 +19,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @RequiredArgsConstructor
 public class UsersService {
@@ -46,6 +48,7 @@ public class UsersService {
         user.setRole(UsersRole.USER);
 
         user.setPassword(passwordEncoder.encode(resquestDto.password()));
+        user.setPasswordChangedAt(LocalDateTime.now());
 
         mapperEndereco.updateFromViaCep(user.getEndereco(), cepResponse);
 
@@ -109,6 +112,7 @@ public class UsersService {
         }
 
         user.setPassword(passwordEncoder.encode(changePassword.newPassword()));
+        user.setPasswordChangedAt(LocalDateTime.now());
 
         repository.save(user);
     }
