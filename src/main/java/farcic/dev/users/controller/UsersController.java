@@ -10,6 +10,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,8 +40,8 @@ public class UsersController {
     @ApiResponse(responseCode = "200", description = "Usuarios retornados com sucesso")
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<UsersResponseDto> listarTodos() {
-        return service.listar();
+    public Page<UsersResponseDto> listarTodos(Pageable pageable) {
+        return service.listar(pageable);
     }
 
     @Operation(summary = "Buscar usuario por ID", description = "Retorna um usuario pelo seu identificador")

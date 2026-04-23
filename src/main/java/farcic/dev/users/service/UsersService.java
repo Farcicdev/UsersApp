@@ -13,6 +13,8 @@ import farcic.dev.users.mapper.EnderecoMapper;
 import farcic.dev.users.mapper.UsersMapper;
 import farcic.dev.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -54,10 +56,9 @@ public class UsersService {
         return mapper.toResponse(save);
     }
     //@GET Listar
-    public List<UsersResponseDto> listar() {
-        return repository.findAll().stream()
-                .map(e -> mapper.toResponse(e))
-                .toList();
+    public Page<UsersResponseDto> listar(Pageable pageable) {
+        return repository.findAll(pageable)
+                .map(entity -> mapper.toResponse(entity));
     }
 
 
