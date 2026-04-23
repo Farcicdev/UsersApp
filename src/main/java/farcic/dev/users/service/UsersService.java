@@ -15,12 +15,9 @@ import farcic.dev.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -55,6 +52,7 @@ public class UsersService {
         UsersEntity save = repository.save(user);
         return mapper.toResponse(save);
     }
+
     //@GET Listar
     public Page<UsersResponseDto> listar(Pageable pageable) {
         return repository.findAll(pageable)
@@ -93,12 +91,11 @@ public class UsersService {
         UsersEntity saved = repository.save(user);
 
 
-
         return mapper.toResponse(saved);
     }
 
     //@PATCH alterar a senha
-    public void changePassword(Long id, ChangePasswordRequestDto changePassword){
+    public void changePassword(Long id, ChangePasswordRequestDto changePassword) {
         validateUserAccess(id);
         UsersEntity user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuario noa existe"));
@@ -117,7 +114,7 @@ public class UsersService {
     }
 
     //@DELETE deletar usuario
-    public void delete(Long id){
+    public void delete(Long id) {
         validateUserAccess(id);
         UsersEntity usuario = repository.findById(id).orElseThrow(
                 () -> new UserNotFoundException("Usuario nao existe")
@@ -126,7 +123,7 @@ public class UsersService {
     }
 
     //@DELETE
-    public void deleteAll(){
+    public void deleteAll() {
         repository.deleteAll();
     }
 
