@@ -48,4 +48,14 @@ public class TokenService {
         // Converte a secret configurada em uma chave HMAC usada para assinar o JWT.
         return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
+
+    public Date getIssuedAt(String token) {
+        return Jwts.parser()
+                .verifyWith(getSignInKey())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload()
+                .getIssuedAt();
+    }
+
 }

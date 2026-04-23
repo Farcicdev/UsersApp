@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.ZoneId;
+import java.util.Date;
 
 @Component
 @RequiredArgsConstructor
@@ -24,22 +26,42 @@ public class SecurityFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        // Tenta recuperar o token enviado no header Authorization.
+
+        // Tenta recuperar o token JWT do header Authorization.
         String token = recoverToken(request);
 
         if (token != null) {
-            // Valida o token e extrai o email salvo no subject.
+            // Extrai o email do usuario salvo no token.
             String email = tokenService.validateToken(token);
 
+            // Recupera a data em que o token foi emitido.
+            Date issuedAt = tokenService.getIssuedAt(token);
+
             repository.findByEmail(email).ifPresent(user -> {
-                // Registra o usuario autenticado no contexto do Spring Security.
-                var authentication = new UsernamePasswordAuthenticationToken(user, null, user.getAuthorities());
+                // Se o usuario trocou a senha depois que o token foi emitido,
+                // esse token antigo deixa de ser valido.
+                if (user.getPasswordChangedAt() != null &&
+                        issuedAt.toInstant().isBefore(
+                                user.getPasswordChangedAt().atZone(ZoneId.systemDefault()).toInstant()
+                        )) {
+                    return;
+                }
+
+                // Se o token ainda e valido, autentica o usuario no contexto do Spring Security.
+                var authentication = new UsernamePasswordAuthenticationToken(
+                        user,
+                        null,
+                        user.getAuthorities()
+                );
+
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             });
         }
 
+        // Continua a cadeia de filtros da requisicao.
         filterChain.doFilter(request, response);
     }
+
 
     private String recoverToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
