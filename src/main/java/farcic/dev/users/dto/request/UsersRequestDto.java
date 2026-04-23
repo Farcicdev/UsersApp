@@ -2,10 +2,7 @@ package farcic.dev.users.dto.request;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 
 @Schema(description = "Dados para criacao ou atualizacao de usuario")
 public record UsersRequestDto(
@@ -15,12 +12,17 @@ public record UsersRequestDto(
         String name,
 
         @NotBlank
-        @Email
+        @Email(message = "Email invalido")
         @Schema(example = "joao.silva@example.com")
         String email,
 
         @NotBlank
-        @Schema(example = "123456")
+        @Schema(example = "Senha123")
+        @Size(min = 8, max = 100, message = "Senha deve ter entre 8 e 100 caracteres")
+        @Pattern(
+                regexp = "^(?=.*[A-Za-z])(?=.*\\d).+$",
+                message = "Senha deve conter letras e numeros"
+        )
         String password,
 
         @Valid

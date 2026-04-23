@@ -20,3 +20,8 @@ spring:
 
 server:
   port: 8081
+
+api:
+  security:
+    token:
+      secret: ${JWT_SECRET:users-api-jwt-secret-key-change-me-2026}

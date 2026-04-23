@@ -1,5 +1,6 @@
 package farcic.dev.users.dto.response;
 
+import farcic.dev.users.entity.UsersRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Dados retornados de usuario")
@@ -12,6 +13,8 @@ public record UsersResponseDto(
 
         @Schema(example = "joao.silva@example.com")
         String email,
+
+        UsersRole role,
 
         EnderecoResponseDto endereco
 ) {

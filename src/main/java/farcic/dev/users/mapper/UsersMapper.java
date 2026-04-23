@@ -26,6 +26,7 @@ public class UsersMapper {
                 entity.getId(),
                 entity.getName(),
                 entity.getEmail(),
+                entity.getRole(),
                 enderecoMapper.toResponse(entity.getEndereco())
         );
     }

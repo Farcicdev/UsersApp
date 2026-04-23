@@ -5,12 +5,15 @@ import farcic.dev.users.dto.request.UsersRequestDto;
 import farcic.dev.users.dto.response.UsersResponseDto;
 import farcic.dev.users.dto.response.ViaCepResponseDto;
 import farcic.dev.users.entity.UsersEntity;
+import farcic.dev.users.entity.UsersRole;
+import farcic.dev.users.exeption.CepNotFoundException;
 import farcic.dev.users.exeption.UserAlreadyExistsException;
 import farcic.dev.users.exeption.UserNotFoundException;
 import farcic.dev.users.mapper.EnderecoMapper;
 import farcic.dev.users.mapper.UsersMapper;
 import farcic.dev.users.repository.UsersRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,6 +26,7 @@ public class UsersService {
     private final UsersMapper mapper;
     private final ViaCepClient viaCepClient;
     private final EnderecoMapper mapperEndereco;
+    private final PasswordEncoder passwordEncoder;
 
     //criar usuario
     public UsersResponseDto createUser(UsersRequestDto resquestDto) {
@@ -33,10 +37,14 @@ public class UsersService {
         ViaCepResponseDto cepResponse = viaCepClient.buscarCep(resquestDto.endereco().cep());
 
         if (cepResponse == null || Boolean.TRUE.equals(cepResponse.erro())) {
-            throw new RuntimeException("CEP nao encontrado");
+            throw new CepNotFoundException("CEP nao encontrado");
         }
 
         UsersEntity user = mapper.toModel(resquestDto);
+
+        user.setRole(UsersRole.USER);
+
+        user.setPassword(passwordEncoder.encode(resquestDto.password()));
 
         mapperEndereco.updateFromViaCep(user.getEndereco(), cepResponse);
 
@@ -64,13 +72,25 @@ public class UsersService {
         UsersEntity user = repository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("Usuario noa existe"));
 
-        if (repository.existsByEmail(resquestDto.email())) {
+        if (repository.existsByEmailAndIdNot(resquestDto.email(), id)) {
             throw new UserAlreadyExistsException("usuario ja existe");
+        }
+
+        ViaCepResponseDto cepResponse = viaCepClient.buscarCep(resquestDto.endereco().cep());
+
+        if (cepResponse == null || Boolean.TRUE.equals(cepResponse.erro())) {
+            throw new RuntimeException("CEP nao encontrado");
         }
 
         mapper.updateEntity(user, resquestDto);
 
+        user.setPassword(passwordEncoder.encode(resquestDto.password()));
+
+        mapperEndereco.updateFromViaCep(user.getEndereco(), cepResponse);
+
         UsersEntity saved = repository.save(user);
+
+
 
         return mapper.toResponse(saved);
     }
