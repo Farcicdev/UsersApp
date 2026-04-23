@@ -1,6 +1,7 @@
 package farcic.dev.users.mapper;
 
 import farcic.dev.users.dto.request.UsersRequestDto;
+import farcic.dev.users.dto.request.UsersUpdateRequestDto;
 import farcic.dev.users.dto.response.UsersResponseDto;
 import farcic.dev.users.entity.UsersEntity;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,9 @@ public class UsersMapper {
         );
     }
 
-    public void updateEntity(UsersEntity entity, UsersRequestDto requestDto) {
+    public void updateEntity(UsersEntity entity, UsersUpdateRequestDto requestDto) {
         entity.setName(requestDto.name());
         entity.setEmail(requestDto.email());
-        entity.setPassword(requestDto.password());
 
         enderecoMapper.updateEntity(entity.getEndereco(), requestDto.endereco());
     }

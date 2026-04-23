@@ -1,8 +1,6 @@
 package farcic.dev.users.config;
 
-import farcic.dev.users.exeption.CepNotFoundException;
-import farcic.dev.users.exeption.UserAlreadyExistsException;
-import farcic.dev.users.exeption.UserNotFoundException;
+import farcic.dev.users.exeption.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -13,19 +11,19 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 public class ExeptionConfig {
 
     @ExceptionHandler(UserAlreadyExistsException.class)
-    public ResponseEntity<String> userAlreadyException (UserAlreadyExistsException e){
-         return ResponseEntity.status(HttpStatus.CONFLICT)
-                 .body(e.getMessage());
+    public ResponseEntity<String> userAlreadyException(UserAlreadyExistsException e) {
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(e.getMessage());
     }
 
     @ExceptionHandler(UserNotFoundException.class)
-    public ResponseEntity<String> userNotFoundException(Exception e){
+    public ResponseEntity<String> userNotFoundException(Exception e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(e.getMessage());
     }
 
     @ExceptionHandler(CepNotFoundException.class)
-    public ResponseEntity<String> cepNotFoundException(Exception e){
+    public ResponseEntity<String> cepNotFoundException(Exception e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(e.getMessage());
     }
@@ -37,6 +35,17 @@ public class ExeptionConfig {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(message);
+    }
+
+    @ExceptionHandler(InvalidPasswordExeception.class)
+    public ResponseEntity<String> invalidPasswordException(Exception e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    }
+
+    @ExceptionHandler(PasswordConfirmationException.class)
+    public ResponseEntity<String> passwordConfirmationException(Exception e){
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(e.getMessage());
     }
 
 }

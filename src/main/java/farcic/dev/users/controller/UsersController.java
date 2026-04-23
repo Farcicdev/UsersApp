@@ -1,6 +1,8 @@
 package farcic.dev.users.controller;
 
+import farcic.dev.users.dto.request.ChangePasswordRequestDto;
 import farcic.dev.users.dto.request.UsersRequestDto;
+import farcic.dev.users.dto.request.UsersUpdateRequestDto;
 import farcic.dev.users.dto.response.UsersResponseDto;
 import farcic.dev.users.service.UsersService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -60,8 +62,21 @@ public class UsersController {
     })
     @PutMapping("/{id}")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    public UsersResponseDto alterar(@Valid @RequestBody UsersRequestDto resquestDto, @PathVariable Long id) {
+    public UsersResponseDto alterar(@Valid @RequestBody UsersUpdateRequestDto resquestDto, @PathVariable Long id) {
         return service.update(resquestDto, id);
+    }
+
+    @Operation(summary = "Alterar senha", description = "Altera a senha do usuario informado")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Senha alterada com sucesso"),
+            @ApiResponse(responseCode = "400", description = "Senha invalida ou confirmacao incorreta"),
+            @ApiResponse(responseCode = "403", description = "Sem permissao para alterar a senha"),
+            @ApiResponse(responseCode = "404", description = "Usuario nao encontrado")
+    })
+    @PatchMapping("/{id}/password")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void changePassword( @PathVariable Long id,@Valid @RequestBody ChangePasswordRequestDto requestDto){
+        service.changePassword(id, requestDto);
     }
 
     @Operation(summary = "Excluir usuario", description = "Remove um usuario pelo seu identificador")
@@ -73,6 +88,17 @@ public class UsersController {
     @ResponseStatus(HttpStatus.OK)
     public void delete(@PathVariable Long id) {
         service.delete(id);
+    }
+
+    @Operation(summary = "Excluir todos os usuarios", description = "Remove todos os usuarios cadastrados. Somente ADMIN")
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Usuarios excluidos com sucesso"),
+            @ApiResponse(responseCode = "403", description = "Sem permissao para excluir todos os usuarios")
+    })
+    @DeleteMapping("/all")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteAll() {
+        service.deleteAll();
     }
 
 }

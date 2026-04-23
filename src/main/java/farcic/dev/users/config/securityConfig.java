@@ -40,6 +40,10 @@ public class securityConfig {
                                 "/v3/api-docs",
                                 "/webjars/**"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.DELETE, "/users/all").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/users/{id}").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers(HttpMethod.GET, "/users/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/users/{id}/password").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 // Desliga autenticacao padrao por browser/basic auth.
