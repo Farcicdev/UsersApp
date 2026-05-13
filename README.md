@@ -1,43 +1,84 @@
 # Users API
 
-API REST para cadastro e gerenciamento de usuarios com:
+![Java](https://img.shields.io/badge/Java-17-red)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-4.0.5-brightgreen)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-blue)
+![JWT](https://img.shields.io/badge/Security-JWT-black)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED)
 
-- Spring Boot 4
-- Spring Security + JWT
-- Spring Data JPA
-- PostgreSQL
-- Flyway
-- OpenFeign
-- Swagger / OpenAPI
-- Docker Compose
+API REST para cadastro e gerenciamento de usuarios, construida com Spring Boot, Spring Security, JWT, PostgreSQL, Flyway e integracao externa com ViaCEP.
 
-## Funcionalidades
+O projeto simula uma base real de autenticacao e gestao de usuarios: cria contas, autentica com token JWT, protege rotas por perfil, valida permissao por dono do recurso, consulta endereco automaticamente por CEP e mantem o banco versionado por migrations.
 
-- cadastro de usuario
-- login com JWT
-- listagem de usuarios
-- listagem paginada de usuarios
-- busca por id
-- atualizacao de cadastro
-- alteracao de senha
-- exclusao de usuario
-- exclusao de todos os usuarios
-- busca de endereco por CEP usando ViaCEP
-- controle de acesso com roles `USER` e `ADMIN`
+## Destaques tecnicos
+
+- Autenticacao stateless com JWT Bearer.
+- Senhas armazenadas com BCrypt.
+- Invalidacao de tokens antigos apos alteracao de senha.
+- Controle de acesso com roles `USER` e `ADMIN`.
+- Autorizacao por dono do recurso: usuario comum so altera, troca senha ou exclui a propria conta.
+- CRUD de usuarios com paginacao e ordenacao.
+- Integracao com ViaCEP via OpenFeign para preencher endereco a partir do CEP.
+- Validacao de entrada com Bean Validation.
+- Tratamento global de excecoes com resposta JSON padronizada.
+- Migrations com Flyway para evolucao do schema.
+- Documentacao interativa com Swagger/OpenAPI.
+- Ambiente reproduzivel com Docker Compose.
 
 ## Stack
 
-- Java 17
-- Spring Boot `4.0.5`
-- PostgreSQL `16`
-- Maven
-- Docker Compose
+| Camada | Tecnologias |
+| --- | --- |
+| Linguagem | Java 17 |
+| Framework | Spring Boot 4.0.5 |
+| Web/API | Spring Web MVC |
+| Seguranca | Spring Security, JWT, BCrypt |
+| Persistencia | Spring Data JPA, Hibernate |
+| Banco | PostgreSQL 16 |
+| Migrations | Flyway |
+| Integracao HTTP | Spring Cloud OpenFeign |
+| Documentacao | Springdoc OpenAPI / Swagger UI |
+| Build | Maven Wrapper |
+| Ambiente | Docker Compose |
+
+## Funcionalidades
+
+- Cadastro de usuario com endereco.
+- Login com email e senha.
+- Emissao de token JWT com expiracao.
+- Listagem paginada de usuarios.
+- Busca de usuario por ID.
+- Atualizacao de cadastro.
+- Alteracao de senha com confirmacao.
+- Exclusao de usuario.
+- Exclusao geral restrita a `ADMIN`.
+- Busca de dados de endereco pelo CEP.
+- Respostas de erro consistentes para validacao, conflito, acesso negado e recursos inexistentes.
+
+## Regras de acesso
+
+| Recurso | Acesso |
+| --- | --- |
+| `POST /users` | Publico |
+| `POST /auth/login` | Publico |
+| `GET /users` | Apenas `ADMIN` |
+| `GET /users/{id}` | `USER` ou `ADMIN` |
+| `PUT /users/{id}` | Dono da conta ou `ADMIN` |
+| `PATCH /users/{id}/password` | Dono da conta ou `ADMIN` |
+| `DELETE /users/{id}` | Dono da conta ou `ADMIN` |
+| `DELETE /users/all` | Apenas `ADMIN` |
 
 ## Como rodar
 
-### 1. Variaveis de ambiente
+### Pre-requisitos
 
-Crie um arquivo `.env` na raiz:
+- Java 17
+- Docker e Docker Compose
+- Maven nao precisa estar instalado, pois o projeto usa Maven Wrapper
+
+### 1. Configure as variaveis de ambiente
+
+Crie um arquivo `.env` na raiz do projeto:
 
 ```env
 POSTGRES_DB=usersapp
@@ -46,80 +87,70 @@ POSTGRES_PASSWORD=admin123
 JWT_SECRET=users-api-jwt-secret-key-change-me-2026
 ```
 
-### 2. Subir com Docker
+### 2. Suba a aplicacao com Docker Compose
 
 ```bash
 docker compose up
 ```
 
-Isso sobe:
-
-- app
-- postgres
-
-### 3. Rodar local pelo IntelliJ
-
-Se quiser rodar fora do Docker, o banco fica exposto em:
-
-```text
-localhost:5439
-```
-
-A aplicacao usa por padrao:
+A API ficara disponivel em:
 
 ```text
 http://localhost:8081
 ```
 
-## Banco e migrations
-
-As migrations ficam em:
+O PostgreSQL fica exposto em:
 
 ```text
-src/main/resources/db/migration
+localhost:5439
 ```
 
-Migrations atuais:
+### 3. Rodar localmente sem container da aplicacao
 
-- `V1__create_tb_users.sql`
-- `V2__insert_test_users.sql`
-- `V3__sync_identity_sequences.sql`
-- `V4__add_column_role.sql`
+Suba apenas o banco, se preferir executar a API pela IDE:
+
+```bash
+docker compose up postgres
+```
+
+Depois rode:
+
+```bash
+./mvnw spring-boot:run
+```
 
 ## Swagger
 
-Documentacao:
+Documentacao interativa:
 
 ```text
 http://localhost:8081/swagger-ui/index.html
 ```
 
-JSON OpenAPI:
+OpenAPI JSON:
 
 ```text
 http://localhost:8081/v3/api-docs
 ```
 
-O Swagger esta configurado com JWT Bearer. Para testar rotas protegidas:
+Para testar rotas protegidas pelo Swagger:
 
-1. faca login em `/auth/login`
-2. copie o token
-3. clique em `Authorize`
-4. informe:
+1. Faca login em `POST /auth/login`.
+2. Use o token retornado no botao `Authorize`.
+3. Informe o valor no formato:
 
 ```text
 Bearer SEU_TOKEN
 ```
 
-## Autenticacao
+## Exemplos de uso
 
 ### Criar usuario
 
 ```http
 POST /users
+Content-Type: application/json
 ```
-
-Exemplo de body:
 
 ```json
 {
@@ -138,9 +169,8 @@ Exemplo de body:
 
 ```http
 POST /auth/login
+Content-Type: application/json
 ```
-
-Body:
 
 ```json
 {
@@ -157,58 +187,45 @@ Resposta:
 }
 ```
 
-Depois disso, envie o token no header:
+### Listagem paginada
 
-```text
+```http
+GET /users?page=0&size=10&sort=name,asc
 Authorization: Bearer SEU_TOKEN
+```
+
+### Alterar senha
+
+```http
+PATCH /users/1/password
+Authorization: Bearer SEU_TOKEN
+Content-Type: application/json
+```
+
+```json
+{
+  "currentPassword": "Senha123",
+  "newPassword": "NovaSenha123",
+  "confirmNewPassword": "NovaSenha123"
+}
 ```
 
 ## Endpoints principais
 
-### Publicos
+| Metodo | Rota | Descricao |
+| --- | --- | --- |
+| `POST` | `/users` | Cria um novo usuario |
+| `POST` | `/auth/login` | Autentica e retorna JWT |
+| `GET` | `/users` | Lista usuarios com paginacao |
+| `GET` | `/users/{id}` | Busca usuario por ID |
+| `PUT` | `/users/{id}` | Atualiza dados cadastrais |
+| `PATCH` | `/users/{id}/password` | Altera senha |
+| `DELETE` | `/users/{id}` | Exclui usuario |
+| `DELETE` | `/users/all` | Exclui todos os usuarios |
 
-- `POST /users`
-- `POST /auth/login`
+## Modelo de erro
 
-### Protegidos
-
-- `GET /users`
-- `GET /users/{id}`
-- `PUT /users/{id}`
-- `PATCH /users/{id}/password`
-- `DELETE /users/{id}`
-- `DELETE /users/all`
-
-### Paginacao
-
-A listagem de usuarios suporta paginacao:
-
-```http
-GET /users?page=0&size=10&sort=name,asc
-```
-
-Exemplo:
-
-```http
-GET /users?page=0&size=5
-```
-
-## Roles
-
-- `USER`
-- `ADMIN`
-
-Regras atuais:
-
-- `USER` pode alterar a propria conta
-- `USER` pode alterar a propria senha
-- `USER` pode deletar a propria conta
-- `ADMIN` pode deletar todos os usuarios
-- `ADMIN` pode acessar listagem protegida
-
-## Resposta de erro
-
-As exceptions principais retornam JSON padronizado:
+As excecoes da API retornam um contrato padronizado:
 
 ```json
 {
@@ -218,57 +235,69 @@ As exceptions principais retornam JSON padronizado:
 }
 ```
 
-Exemplos tratados:
+## Banco de dados
 
-- email duplicado
-- usuario nao encontrado
-- CEP nao encontrado
-- erro de validacao
-- senha atual invalida
-- confirmacao de senha incorreta
-- acesso negado
+As migrations ficam em:
 
-## Validacoes
-
-Exemplos de validacao implementados:
-
-- email obrigatorio e valido
-- senha com minimo de caracteres
-- senha com letras e numeros
-- confirmacao de nova senha
-- CEP com formato valido
-- email duplicado
-
-## ViaCEP
-
-O endereco e montado a partir do CEP usando a API:
-
-[ViaCEP](https://viacep.com.br)
-
-## Criar admin em desenvolvimento
-
-O endpoint publico sempre cria usuario com role `USER`.
-
-Para promover um usuario para admin em ambiente local:
-
-```sql
-UPDATE tb_users
-SET role = 'ADMIN'
-WHERE email = 'seu-email@email.com';
+```text
+src/main/resources/db/migration
 ```
 
-Depois faca login novamente para gerar um token com as permissoes atualizadas.
+Migrations atuais:
 
-## Build
+| Migration | Descricao |
+| --- | --- |
+| `V1__create_tb_users.sql` | Cria tabelas de usuarios e enderecos |
+| `V2__insert_test_users.sql` | Insere dados iniciais |
+| `V3__sync_identity_sequences.sql` | Sincroniza sequences |
+| `V4__add_column_role.sql` | Adiciona perfil de acesso |
+| `V5__add_password_changed_at.sql` | Registra data de alteracao de senha |
 
-Build sem testes:
+## Estrutura do projeto
+
+```text
+src/main/java/farcic/dev/users
+|-- client       # Integracao com ViaCEP usando OpenFeign
+|-- config       # Security, Swagger/OpenAPI e tratamento de excecoes
+|-- controller   # Endpoints REST
+|-- dto          # Contratos de entrada e saida
+|-- entity       # Entidades JPA
+|-- exeption     # Excecoes de dominio
+|-- mapper       # Conversao entre entidades e DTOs
+|-- repository   # Acesso ao banco com Spring Data JPA
+`-- service      # Regras de negocio
+```
+
+## Decisoes de arquitetura
+
+- A API usa JWT stateless para evitar sessao no servidor.
+- O `SecurityFilter` valida o token a cada requisicao e popula o contexto do Spring Security.
+- A data `passwordChangedAt` permite rejeitar tokens emitidos antes da troca de senha.
+- A regra de permissao por dono do recurso fica na camada de service, proxima do caso de uso.
+- O schema do banco e controlado por Flyway, evitando dependencia de `ddl-auto` para criacao automatica.
+- O ViaCEP fica isolado em um client Feign, mantendo controller e service livres de detalhes HTTP.
+
+## Validacoes implementadas
+
+- Email obrigatorio e em formato valido.
+- Nome obrigatorio com limite de tamanho.
+- Senha com minimo de 8 caracteres, contendo letras e numeros.
+- Confirmacao obrigatoria na troca de senha.
+- CEP validado pela resposta do ViaCEP.
+- Email unico no cadastro e na atualizacao.
+
+## Comandos uteis
 
 ```bash
-mvn clean package -DskipTests
+# Rodar a aplicacao
+./mvnw spring-boot:run
+
+# Executar testes
+./mvnw test
+
+# Subir aplicacao e banco
+docker compose up
+
+# Subir somente o banco
+docker compose up postgres
 ```
-
-## Proximos passos
-
-- criar endpoint `/users/me`
-- testes unitarios e de integracao
-- fluxo de confirmacao de email
